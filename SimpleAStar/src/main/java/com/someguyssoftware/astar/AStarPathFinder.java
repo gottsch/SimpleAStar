@@ -1,9 +1,9 @@
 package com.someguyssoftware.astar;
 
-import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.PriorityQueue;
 
 /**
@@ -11,15 +11,27 @@ import java.util.PriorityQueue;
  * @author Mark Gottschling on Sep 25, 2020
  *
  */
-public class SimpleAStar {
-
-	private boolean[][] mapMatrix;
-	private Vertex[][] pathMatrix;
-	private Coords2D startPoint;
-	private Coords2D destinationPoint;
-	
-	ArrayList<Vertex> pathList = new ArrayList<>();
-    ArrayList<Vertex> closedList = new ArrayList<>();
+public class AStarPathFinder {
+    /*
+     * the map that is to be navigated 
+     */
+    private boolean[][] mapMatrix;
+    /*
+     * the matrix that stores the path
+     */
+    private Vertex[][] pathMatrix;
+    /**
+     * the starting point
+     */
+    private Coords2D start;
+    /**
+     * the destination point
+     */
+	private Coords2D end;
+	/**
+     * a list of vertexs that represents the path taken
+     */
+    private List<Vertex> path;
 	
 	private List<Rectangle2D> obstacles = new ArrayList<>();
 	
@@ -27,41 +39,31 @@ public class SimpleAStar {
 	private int height = 96;
 	
 	private int gCost = 0;
-	
-	public SimpleAStar() {
-		pathMatrix = new Vertex[width][height];
+    
+    /**
+     * 
+     */
+    public AStarPathFinder() {
 	}
-	
-	public List<Vertex> findPath() {
-        // method to generate Chebyshev path. both Horizontal and Diagonal pathways are possible.
-        generateHValue(mapMatrix, getStartPoint(), getDestinationPoint(), getWidth(), 10, 10);
+    
+    /**
+     * 
+     * @return
+     */
+	public Optional<List<Vertex>> findPath() {
+        pathMatrix = new Vertex[width][height];
         
-        if (pathMatrix[getStartPoint().getX()][getStartPoint().getY()].getHValue() != -1 && pathList.contains(pathMatrix[getDestinationPoint().getX()][getDestinationPoint().getY()])) {
-//            StdDraw.setPenColor(Color.orange);
-//            StdDraw.setPenRadius(0.006);
-
-        	// draw the path
-            for (int i = 0; i < pathList.size() - 1; i++) {
-            /*System.out.println(pathList.get(i).x + " " + pathList.get(i).y);*/
-            /*StdDraw.filledCircle(pathList.get(i).y, n - pathList.get(i).x - 1, .2);*/
-            	
-// >>                StdDraw.line(pathList.get(i).y, n - 1 - pathList.get(i).x, pathList.get(i + 1).y, n - 1 - pathList.get(i + 1).x);
-                
-//                gCost += pathList.get(i).gValue;
-                /*fCost += pathList.get(i).fValue;*/
-            }
-
+        // method to generate Manhattan path. both Horizontal and Diagonal pathways are possible.
+        generateHValue(mapMatrix, getStart(), getEnd(), getWidth(), 10);
+        
+        if (pathMatrix[getStart().getX()][getStart().getY()].getHValue() != -1 
+            && path.contains(pathMatrix[getEnd().getX()][getEnd().getY()])) {
             System.out.println("Manhattan Path Found");
-//            System.out.println("Total Cost: " + gCost/10.0);
-            /*System.out.println("Total fCost: " + fCost);*/
-            gCost = 0;
-            /*fCost = 0;*/
-
         } else {
             System.out.println("Manhattan Path Not found");
-        }
-        
-        return pathList;
+            return Optional.empty();
+        } 
+        return Optional.of(getPath());
 	}
 	
     /**
@@ -76,7 +78,7 @@ public class SimpleAStar {
      * @param additionalPath Boolean to decide whether to calculate the cost of through the diagonal path
      * @param h              int value which decides the correct method to choose to calculate the Heuristic value
      */
-    public void generateHValue(boolean matrix[][], Coords2D source, Coords2D destination, int width, int cost, int diagonalCost) {
+    private void generateHValue(boolean matrix[][], Coords2D source, Coords2D destination, int width, int cost) {
 
         for (int x = 0; x < matrix.length; x++) {
             for (int y = 0; y < matrix.length; y++) {
@@ -93,7 +95,7 @@ public class SimpleAStar {
                 }
             }
         }
-        generatePath(pathMatrix, source, destination, width, cost, diagonalCost);
+        generatePath(pathMatrix, source, destination, width, cost);
     }
     
     /**
@@ -104,10 +106,8 @@ public class SimpleAStar {
      * @param Bj             Ending point's x value
      * @param n              Length of one side of the matrix
      * @param v              Cost between 2 cells located horizontally or vertically next to each other
-     * @param d              Cost between 2 cells located Diagonally next to each other
-     * @param additionalPath Boolean to decide whether to calculate the cost of through the diagonal path
      */
-    public void generatePath(Vertex hValue[][], Coords2D source, Coords2D destination, int n, int v, int d) {
+    public void generatePath(Vertex hValue[][], Coords2D source, Coords2D destination, int n, int v) {
 
         //Creation of a PriorityQueue and the declaration of the Comparator
         @SuppressWarnings("unchecked")
@@ -119,6 +119,7 @@ public class SimpleAStar {
                         ((Vertex) cell1).getFValue() > ((Vertex) cell2).getFValue() ? 1 : 0;
             }
         });
+        List<Vertex> closedList = new ArrayList<>();
 
         //Adds the Starting cell inside the openList
         openList.add(pathMatrix[source.getX()][source.getY()]);
@@ -215,12 +216,6 @@ public class SimpleAStar {
             }
         }
 
-        /*for (int i = 0; i < n; ++i) {
-            for (int j = 0; j < n; ++j) {
-                System.out.print(pathMatrix[i][j].fValue + "    ");
-            }
-            System.out.println();
-        }*/
 
         //Assigns the last Object in the closedList to the endVertex variable
         Vertex endVertex = closedList.get(closedList.size() - 1);
@@ -229,11 +224,11 @@ public class SimpleAStar {
         //Stores each parent Vertex to the PathList so it is easier to trace back the final path
         while (endVertex.getParent() != null) {
             Vertex currentVertex = endVertex;
-            pathList.add(currentVertex);
+            path.add(currentVertex);
             endVertex = endVertex.getParent();
         }
 
-        pathList.add(pathMatrix[source.getX()][source.getY()]);
+        path.add(pathMatrix[source.getX()][source.getY()]);
         // clears the openList
         openList.clear();
     }
@@ -243,39 +238,62 @@ public class SimpleAStar {
 	 * @param obstacles
 	 * @return
 	 */
-	public boolean[][] buildMatrix(List<Rectangle2D> obstacles) {
-		return null;
+	public AStarPathFinder withMap(final List<Rectangle2D> obstacles) {
+        final boolean[][] map = new boolean[width][height];
+        obstacles.forEach(obstacle -> {
+            for(int x = 0; x < obstacle.getWidth(); x++) {
+                for(int y = 0; y < obstacle.getHeight(); y++) {
+                    map[obstacle.getOrigin().getX() + x][obstacle.getOrigin().getY() + y] = true;
+                }
+            }
+        });
+        this.mapMatrix = map;
+        return this;
 	}
 
-	public Coords2D getStartPoint() {
-		return startPoint;
+	public Coords2D getStart() {
+		return start;
 	}
 
-	public void setStartPoint(Coords2D startPoint) {
-		this.startPoint = startPoint;
+	public AStarPathFinder withStart(Coords2D startPoint) {
+        this.start = startPoint;
+        return this;
 	}
 
-	public Coords2D getDestinationPoint() {
-		return destinationPoint;
+	public Coords2D getEnd() {
+		return end;
 	}
 
-	public void setDestinationPoint(Coords2D destinationPoint) {
-		this.destinationPoint = destinationPoint;
+	public void withEnd(Coords2D end) {
+		this.end = end;
 	}
 
 	public int getWidth() {
 		return width;
 	}
 
-	public void setWidth(int width) {
-		this.width = width;
+	public AStarPathFinder withWidth(int width) {
+        this.width = width;
+        return this;
 	}
 
 	public int getHeight() {
 		return height;
 	}
 
-	public void setHeight(int height) {
-		this.height = height;
+	public AStarPathFinder withHeight(int height) {
+        this.height = height;
+        return this;
 	}
+
+    public List<Vertex> getPath() {
+        if (path == null) {
+            path = new ArrayList<>();
+        }
+        return path;
+    }
+
+    private void setPath(List<Vertex> path) {
+        this.path = path;
+    }
 }
