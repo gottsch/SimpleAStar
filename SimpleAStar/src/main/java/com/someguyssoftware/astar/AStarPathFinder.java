@@ -20,12 +20,13 @@ public class AStarPathFinder {
      * the matrix that stores the path
      */
     private Vertex[][] pathMatrix;
+
     /**
      * the starting point
      */
     private Coords2D start;
     /**
-     * the destination point
+     * the end point
      */
 	private Coords2D end;
 	/**
@@ -34,9 +35,17 @@ public class AStarPathFinder {
     private List<Vertex> path;
 	
 	private List<Rectangle2D> obstacles = new ArrayList<>();
-	
-	private int width = 96;
-	private int height = 96;
+    
+    // TODO these two are actually unnecessary as the map has the dimensions
+    /**
+     * width of the map
+     */
+    private int width = 96;
+    /** 
+     * height of the map
+     */
+    private int height = 96;
+    
 	
 	private int gCost = 0;
     
@@ -51,14 +60,20 @@ public class AStarPathFinder {
      * @return
      */
 	public Optional<List<Vertex>> findPath() {
-        pathMatrix = new Vertex[width][height];
+        // NOTE true values in the map matrix are travsable and false is blocked.
+        pathMatrix = new Vertex[mapMatrix.length][mapMatrix[0].length];
         
         // method to generate Manhattan path. both Horizontal and Diagonal pathways are possible.
-        generateHValue(mapMatrix, getStart(), getEnd(), getWidth(), 10);
+        generatePathMatrix(mapMatrix, getStart(), getEnd(), 10);
         
         if (pathMatrix[getStart().getX()][getStart().getY()].getHValue() != -1 
             && path.contains(pathMatrix[getEnd().getX()][getEnd().getY()])) {
             System.out.println("Manhattan Path Found");
+
+            // TODO convert List<Vertex> to List<Coords2s>;
+            // TODO make Vertex an inner class of AStarPathFinder
+            // TODO rename Vertex to Node
+
         } else {
             System.out.println("Manhattan Path Not found");
             return Optional.empty();
@@ -75,16 +90,16 @@ public class AStarPathFinder {
      * @param width              Length of one side of the matrix
      * @param cost              Cost between 2 cells located horizontally or vertically next to each other
      */
-    private void generateHValue(boolean matrix[][], Coords2D source, Coords2D destination, int width, int cost) {
+    private void generatePathMatrix(boolean matrix[][], Coords2D start, Coords2D end, int cost) {
 
         for (int x = 0; x < matrix.length; x++) {
-            for (int y = 0; y < matrix.length; y++) {
+            for (int y = 0; y < matrix[0].length; y++) {
                 // creating a new Vertex object for each and every cell of the path matrix
                 pathMatrix[x][y] = new Vertex(x, y);
                 //Checks whether a cell is Blocked or Not by checking the boolean value
                 if (matrix[x][y]) {
                        // assigning the Manhattan Heuristic value by calculating the absolute length (x+y) from the ending point to the starting point
-                        pathMatrix[x][y].setHValue(Math.abs(x - destination.getX()) + Math.abs(y - destination.getY()));
+                        pathMatrix[x][y].setHValue(Math.abs(x - end.getX()) + Math.abs(y - end.getY()));
 
                 } else {
                     // if the boolean value is false, then assigning -1 instead of the absolute length
@@ -92,19 +107,16 @@ public class AStarPathFinder {
                 }
             }
         }
-        generatePath(pathMatrix, source, destination, cost);
+        generatePath(start, end, cost);
     }
     
     /**
-     * @param hValue         Vertex type 2D Array (Matrix)
-     * @param Ai             Starting point's y value
-     * @param Aj             Starting point's x value
-     * @param Bi             Ending point's y value
-     * @param Bj             Ending point's x value
-     * @param n              Length of one side of the matrix
-     * @param cost              Cost between 2 cells located horizontally or vertically next to each other
+
+     * @param start        Starting coords;
+     * @param end  Ending coords;
+     * @param cost            Cost between 2 cells located horizontally or vertically next to each other
      */
-    public void generatePath(Vertex hValue[][], Coords2D source, Coords2D destination, int cost) {
+    private void generatePath(Coords2D start, Coords2D end, int cost) {
 
         //Creation of a PriorityQueue and the declaration of the Comparator
         @SuppressWarnings("unchecked")
@@ -119,7 +131,7 @@ public class AStarPathFinder {
         List<Vertex> closedList = new ArrayList<>();
 
         //Adds the Starting cell inside the openList
-        openList.add(pathMatrix[source.getX()][source.getY()]);
+        openList.add(pathMatrix[start.getX()][start.getY()]);
 
         //Executes the rest if there are objects left inside the PriorityQueue
         while (true) {
@@ -134,7 +146,7 @@ public class AStarPathFinder {
 
             //Checks if whether the node returned is having the same node object values of the ending point
             //If it des then stores that inside the closedList and breaks the while loop
-            if (node == pathMatrix[destination.getX()][destination.getY()]) {
+            if (node == pathMatrix end.getX()] end.getY()]) {
                 closedList.add(node);
                 break;
             }
@@ -225,7 +237,7 @@ public class AStarPathFinder {
             endVertex = endVertex.getParent();
         }
 
-        path.add(pathMatrix[source.getX()][source.getY()]);
+        path.add(pathMatrix[start.getX()][start.getY()]);
         // clears the openList
         openList.clear();
     }
@@ -252,8 +264,8 @@ public class AStarPathFinder {
 		return start;
 	}
 
-	public AStarPathFinder withStart(Coords2D startPoint) {
-        this.start = startPoint;
+	public AStarPathFinder withStart(Coords2D start) {
+        this.start = start;
         return this;
 	}
 
@@ -261,8 +273,9 @@ public class AStarPathFinder {
 		return end;
 	}
 
-	public void withEnd(Coords2D end) {
+	public AStarPathFinder withEnd(Coords2D end) {
 		this.end = end;
+        return this;
 	}
 
 	public int getWidth() {
