@@ -74,9 +74,6 @@ public class AStarPathFinder {
      * @param Bj             Ending point's y value
      * @param width              Length of one side of the matrix
      * @param cost              Cost between 2 cells located horizontally or vertically next to each other
-     * @param diagonalCost              Cost between 2 cells located Diagonally next to each other
-     * @param additionalPath Boolean to decide whether to calculate the cost of through the diagonal path
-     * @param h              int value which decides the correct method to choose to calculate the Heuristic value
      */
     private void generateHValue(boolean matrix[][], Coords2D source, Coords2D destination, int width, int cost) {
 
@@ -95,7 +92,7 @@ public class AStarPathFinder {
                 }
             }
         }
-        generatePath(pathMatrix, source, destination, width, cost);
+        generatePath(pathMatrix, source, destination, cost);
     }
     
     /**
@@ -105,9 +102,9 @@ public class AStarPathFinder {
      * @param Bi             Ending point's y value
      * @param Bj             Ending point's x value
      * @param n              Length of one side of the matrix
-     * @param v              Cost between 2 cells located horizontally or vertically next to each other
+     * @param cost              Cost between 2 cells located horizontally or vertically next to each other
      */
-    public void generatePath(Vertex hValue[][], Coords2D source, Coords2D destination, int n, int v) {
+    public void generatePath(Vertex hValue[][], Coords2D source, Coords2D destination, int cost) {
 
         //Creation of a PriorityQueue and the declaration of the Comparator
         @SuppressWarnings("unchecked")
@@ -149,8 +146,8 @@ public class AStarPathFinder {
                 if (pathMatrix[node.getCoords().getX()][node.getCoords().getY() - 1].getHValue() != -1
                         && !openList.contains(pathMatrix[node.getCoords().getX()][node.getCoords().getY() - 1])
                         && !closedList.contains(pathMatrix[node.getCoords().getX()][node.getCoords().getY() - 1])) {
-                    double tCost = node.getFValue() + v;
-                    pathMatrix[node.getCoords().getX()][node.getCoords().getY() - 1].setGValue(v);
+                    double tCost = node.getFValue() + cost;
+                    pathMatrix[node.getCoords().getX()][node.getCoords().getY() - 1].setGValue(cost);
                     double cost = pathMatrix[node.getCoords().getX()][node.getCoords().getY() - 1].getHValue() + tCost;
                     if (pathMatrix[node.getCoords().getX()][node.getCoords().getY() - 1].getFValue() > cost || !openList.contains(pathMatrix[node.getCoords().getX()][node.getCoords().getY() - 1]))
                         pathMatrix[node.getCoords().getX()][node.getCoords().getY() - 1].setFValue(cost);
@@ -167,8 +164,8 @@ public class AStarPathFinder {
                 if (pathMatrix[node.getCoords().getX()][node.getCoords().getY() + 1].getHValue() != -1
                         && !openList.contains(pathMatrix[node.getCoords().getX()][node.getCoords().getY() + 1])
                         && !closedList.contains(pathMatrix[node.getCoords().getX()][node.getCoords().getY() + 1])) {
-                    double tCost = node.getFValue() + v;
-                    pathMatrix[node.getCoords().getX()][node.getCoords().getY() + 1].setGValue(v);
+                    double tCost = node.getFValue() + cost;
+                    pathMatrix[node.getCoords().getX()][node.getCoords().getY() + 1].setGValue(cost);
                     double cost = pathMatrix[node.getCoords().getX()][node.getCoords().getY() + 1].getHValue() + tCost;
                     if (pathMatrix[node.getCoords().getX()][node.getCoords().getY() + 1].getFValue() > cost || !openList.contains(pathMatrix[node.getCoords().getX()][node.getCoords().getY() + 1]))
                         pathMatrix[node.getCoords().getX()][node.getCoords().getY() + 1].setFValue(cost);
@@ -184,8 +181,8 @@ public class AStarPathFinder {
                 if (pathMatrix[node.getCoords().getX() + 1][node.getCoords().getY()].getHValue() != -1
                         && !openList.contains(pathMatrix[node.getCoords().getX() + 1][node.getCoords().getY()])
                         && !closedList.contains(pathMatrix[node.getCoords().getX() + 1][node.getCoords().getY()])) {
-                    double tCost = node.getFValue() + v;
-                    pathMatrix[node.getCoords().getX() + 1][node.getCoords().getY()].setGValue(v);
+                    double tCost = node.getFValue() + cost;
+                    pathMatrix[node.getCoords().getX() + 1][node.getCoords().getY()].setGValue(cost);
                     double cost = pathMatrix[node.getCoords().getX() + 1][node.getCoords().getY()].getHValue() + tCost;
                     if (pathMatrix[node.getCoords().getX() + 1][node.getCoords().getY()].getFValue() > cost || !openList.contains(pathMatrix[node.getCoords().getX() + 1][node.getCoords().getY()]))
                         pathMatrix[node.getCoords().getX() + 1][node.getCoords().getY()].setFValue(cost);
@@ -202,8 +199,8 @@ public class AStarPathFinder {
                 if (pathMatrix[node.getCoords().getX() - 1][node.getCoords().getY()].getHValue() != -1
                         && !openList.contains(pathMatrix[node.getCoords().getX() - 1][node.getCoords().getY()])
                         && !closedList.contains(pathMatrix[node.getCoords().getX() - 1][node.getCoords().getY()])) {
-                    double tCost = node.getFValue() + v;
-                    pathMatrix[node.getCoords().getX() - 1][node.getCoords().getY()].setGValue(v);
+                    double tCost = node.getFValue() + cost;
+                    pathMatrix[node.getCoords().getX() - 1][node.getCoords().getY()].setGValue(cost);
                     double cost = pathMatrix[node.getCoords().getX() - 1][node.getCoords().getY()].getHValue() + tCost;
                     if (pathMatrix[node.getCoords().getX() - 1][node.getCoords().getY()].getFValue() > cost || !openList.contains(pathMatrix[node.getCoords().getX() - 1][node.getCoords().getY()]))
                         pathMatrix[node.getCoords().getX() - 1][node.getCoords().getY()].setFValue(cost);
